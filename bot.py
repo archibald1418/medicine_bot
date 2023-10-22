@@ -3,19 +3,21 @@ from dotenv import load_dotenv
 import os
 import telebot
 from telebot.types import Message
-from typing import Callable, TypeAlias
+from telebot import TeleBot
+from typing import Callable, TypeAlias, Pattern
+import re
 
 load_dotenv('.env')
 # print(os.getenv("BOT_TOKEN"))
 
 MsgFilter: TypeAlias = Callable[[Message], bool]
 
-AnyMessage: MsgFilter = lambda msg: True
-TextMessage: MsgFilter = lambda msg: msg.content_type == 'text'
+any_message: MsgFilter = lambda msg: True
+text_message: MsgFilter = lambda msg: msg.content_type == 'text'
 
 
-TOKEN: str = os.getenv("BOT_TOKEN")
-bot = telebot.TeleBot(TOKEN)
+TOKEN: str  = os.environ["BOT_TOKEN"]
+bot = TeleBot(TOKEN)
 
 @bot.message_handler(commands=['start', 'hello'])
 def send_hello(msg: Message):
