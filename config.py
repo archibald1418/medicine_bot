@@ -1,11 +1,11 @@
 import os
 import re
 from typing import Pattern
-from telebot import TeleBot
 
 from dotenv import load_dotenv
 
-load_dotenv('.env')
+if not load_dotenv(".env"):
+    raise Exception("No envs are set")
 
 TOKEN: str = os.environ["BOT_TOKEN"]
 
