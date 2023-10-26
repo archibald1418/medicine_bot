@@ -1,78 +1,58 @@
-
-import os
 import re
-import sched
 import time
 import logging
+from decorators import call_counter
 
-from typing import Callable, TypeAlias, Optional
+from typing import Optional
+from extra_types import FileMode, LogLevel, TextMessage, BlockHandler, ILogger
 
 import telebot
 from telebot.types import Message
 
 from config import TOKEN, REGEXP_NSECONDS
 
-MsgFilter: TypeAlias = Callable[[Message], bool]
 
-any_message: MsgFilter = lambda msg: True
-text_message: MsgFilter = lambda msg: msg.content_type == 'text'
-block_handler: MsgFilter = lambda msg: False
-
-
-class Logger:
-
-    def __init__ (self):
-        self.logger = logging.basicConfig(filename='timerbot.log', encoding='utf8', filemode='w', level=logging.DEBUG)
-        # self.logger = telebot.logger.setLevel(logging.DEBUG)
+class Logger(ILogger):
+    def __init__(
+        self,
+        filename: str = "timerbot.log",
+        encoding: str = "utf8",
+        filemode: FileMode = "w",
+        level: Optional[LogLevel] = logging.DEBUG,
+    ):
+        logging.basicConfig(
+            filename=filename, filemode=filemode, level=level, encoding=encoding
+        )
 
     def log(self, msg: Optional[str] = None):
         logging.info(f"[{time.ctime(time.time())}]: {msg or 'OK'}")
 
 
-
 # Globals
 bot = telebot.TeleBot(TOKEN, threaded=True)
 logger = Logger()
-requests = 0
 
 
-# Decorator for updating number of requests
-def upd_count(handler):
-    
-    def inner(*args, **kwargs):
-        global requests
-        requests += 1
-        handler(*args, **kwargs)
-    
-    return inner
-
-
-@bot.message_handler(commands=['start', 'hello'])
-@upd_count
-def send_hello(msg: Message):
-    bot.reply_to(msg, "Howdy how are you doing?")
-
-@bot.message_handler(func=block_handler)
-@upd_count
+@bot.message_handler(func=BlockHandler)
+@call_counter
 def echo_all(self, msg: Message):
-    assert(msg.text)
+    assert msg.text
     self.bot.reply_to(msg, msg.text)
 
 
-
-@bot.message_handler(func=text_message)
-@upd_count
+@bot.message_handler(func=TextMessage)
+@call_counter
 def timex(msg: Message):
     if msg.text:
-        logger.log(f"Request {requests}: '{msg.text}'")
+        logger.log(f"Request {timex.calls}: '{msg.text}'")
 
-        if (match := re.match(REGEXP_NSECONDS, msg.text)):
+        if match := re.match(REGEXP_NSECONDS, msg.text):
             seconds = int(match.group(1))
 
-            '''Sleep here'''
+            """Sleep here"""
             time.sleep(seconds)
-            logger.log(f"Request {requests} waited {seconds} seconds")
-            
+            logger.log(f"Request {timex.calls} waited {seconds} seconds")
+
             bot.reply_to(msg, f"{seconds} seconds passed!")
         else:
             bot.reply_to(msg, "Command is invalid: please write number of seconds")
@@ -87,5 +67,5 @@ def main():
     run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
