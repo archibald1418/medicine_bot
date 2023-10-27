@@ -1,3 +1,5 @@
-*.pyc
-*.log
-.env
+**/*.pyc
+**/*.log
+**/*.*.swp
+**/.env
+**/__pycache__
