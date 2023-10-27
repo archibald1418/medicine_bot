@@ -4,7 +4,7 @@ import logging
 from decorators import call_counter
 
 from typing import Optional
-from extra_types import FileMode, LogLevel, TextMessage, BlockHandler, ILogger
+from extra_types import FileMode, LogLevel, IsTextMessage, BlockHandler, ILogger
 
 import telebot
 from telebot.types import Message
@@ -40,7 +40,7 @@ def echo_all(self, msg: Message):
     self.bot.reply_to(msg, msg.text)
 
 
-@bot.message_handler(func=TextMessage)
+@bot.message_handler(func=IsTextMessage)
 @call_counter
 def timex(msg: Message):
     if msg.text:

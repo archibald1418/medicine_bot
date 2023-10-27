@@ -10,8 +10,8 @@ LogLevel: TypeAlias = logging._Level
 
 MsgFilter: TypeAlias = Callable[[Message], bool]
 
-AnyMessage: MsgFilter = lambda msg: True
-TextMessage: MsgFilter = lambda msg: msg.content_type == "text"
+IsAnyMessage: MsgFilter = lambda msg: True
+IsTextMessage: MsgFilter = lambda msg: msg.content_type == "text"
 BlockHandler: MsgFilter = lambda msg: False
 
 class ILogger(Protocol):
