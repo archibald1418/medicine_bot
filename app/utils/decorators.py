@@ -13,14 +13,3 @@ def call_counter(handler: AnyFunction) -> AnyFunction:
     inner.calls = 0  # type: ignore
 
     return inner
-
-
-"""
-
-@decorator
-def func():
-    return None
-
-func = decorator()
-    
-"""

@@ -4,6 +4,8 @@ from typing import Pattern
 
 from dotenv import load_dotenv
 
+print(os.listdir())
+
 if not load_dotenv(".env"):
     raise Exception("No envs are set")
 
