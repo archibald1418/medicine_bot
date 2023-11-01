@@ -3,3 +3,4 @@
 **/*.*.swp
 **/.env
 **/__pycache__
+.vscode/settings.json
