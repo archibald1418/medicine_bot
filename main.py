@@ -7,7 +7,7 @@ from app.utils.decorators import call_counter
 from app.typedefs.filters import IsTextMessage # 'types' is also a package from telegram
 from app.config import REGEXP_NSECONDS
 
-from app import logger, bot
+from app import logger, bot #, db_engine
 
 
 # @bot.message_handler(func=BlockHandler)

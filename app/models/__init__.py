@@ -1,6 +1,7 @@
 import uuid
 
 from typing import List, Optional
+import datetime
 from sqlalchemy import ForeignKey, String, Integer, DateTime, DATETIME, Uuid
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -27,10 +28,10 @@ class Recipe(Base):
 
     __tablename__ = "recipe"
 
-    id: Mapped[Integer] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     fk_medicine_id: Mapped[Integer] = ForeignKey("medicine.id", nullable=False)
-    sttm: Mapped[DateTime] = mapped_column()
-    ettm: Mapped[DateTime] = mapped_column()
+    sttm: Mapped[datetime.datetime] = mapped_column()
+    ettm: Mapped[datetime.datetime] = mapped_column()
     # ... TODO: more parsing info for recipe
 
     user: Mapped["User"] = relationship(back_populates="recipes") # one user follows many recipes
@@ -42,10 +43,7 @@ class User(Base):
     __tablename__ = "user"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4, unique=True, autoincrement=False)
-    fk_recipe_id: Mapped[Integer] = ForeignKey("recipe.id", nullable=True)
+    fk_recipe_id: Mapped[int] = ForeignKey("recipe.id", nullable=True)
 
     medicines: Mapped[List[Medicine]] = relationship(back_populates="users") # one user takes many medicines
     recipes: Mapped[Recipe] = relationship(back_populates="user")
-
-    
-    

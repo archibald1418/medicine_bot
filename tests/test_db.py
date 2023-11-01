@@ -1,35 +1,23 @@
-# import sqlite3
-from sqlalchemy import Engine, Connection, Result, TextClause
+from sqlalchemy import Engine, Connection, Result, TextClause, MetaData
 from sqlalchemy import (
     create_engine,
     text
 )
-import logging
 from sqlalchemy.orm import Session
-from sqlalchemy.engine import URL
+
+import app.models as models
+from . import db_ctx
+
+import logging
 
 
-# TODO for a server part
-username: str
-password: str
-host: str
-port: int
 
-db: str = "sqlite"
-dbapi: str = "pysqlite"
-filename: str = ":memory:"  # in-memory database
+def test_conn():
 
-dburl: URL = f"{db}+{dbapi}:///{filename}"
-# postgresql+pg8000://dbuser:kx%40jj5%2Fg@pghost10/appdb
-
-engine: Engine = create_engine(dburl)
-
-
-def conn():
     conn: Connection
 
-    # 'with engine.begin()' will automatically commit everything in the block
-    with engine.connect() as conn:
+    # 'with db_engine.begin()' will automatically commit everything in the block
+    with db_ctx as conn:
         result: Result = conn.execute(text("SELECT 'hello from the other side'"))
         conn.execute(text("CREATE TABLE some_table (x int, y int)"))
         conn.execute(
@@ -37,22 +25,23 @@ def conn():
             [{"x": 1, "y": 1}, {"x": 2, "y": 4}],
         )
         conn.commit()
-        # print(result.all())
+        print(result.all())
+        # raise NotImplemented
 
     # rows
-    with engine.connect() as conn:
+    with db_ctx as conn:
         result: Result = conn.execute(text("SELECT x, y FROM some_table"))
         for row in result:
             print(f"x: {row.x}  y: {row.y}")
     
     # parameters
-    with engine.connect() as conn:
+    with db_ctx as conn:
         result = conn.execute(text("SELECT x, y FROM some_table WHERE y > :y"), {"y": 2})
         for row in result:
             print(f"x: {row.x}  y: {row.y}")
     
     # multiple params (this is a certified swine)
-    with engine.connect() as conn:
+    with db_ctx as conn:
         conn.execute(
             text("INSERT INTO some_table (x, y) VALUES (:x, :y)"),
             [{"x": 11, "y": 12}, {"x": 13, "y": 14}],
@@ -60,13 +49,13 @@ def conn():
         conn.commit()
 
     
-    with engine.connect() as conn:
+    with db_ctx as conn:
         result = conn.execute(text("SELECT * FROM some_table"))
         print("fetched:", *result.all(), sep='\n')
 
 
 def session():
-    session: Session = Session(engine)
+    session: Session = Session(db_ctx.db_engine)
 
     stmt: TextClause = text("SELECT * FROM some_table WHERE y > :y ORDER BY x, y")
     
@@ -76,31 +65,25 @@ def session():
             for k, v in row.items():
                 print(k, v, sep=':')
     
-    with Session(engine) as session:
+    with Session(db_ctx.db_engine) as session:
         result = session.execute(
             text("UPDATE some_table SET y=:y WHERE x=:x"),
             [{"x": 9, "y": 11}, {"x": 13, "y": 15}],
         )
         session.commit()
-        session.add
+        # session.add
 
 
+def test_migrate() -> None:
 
-def main():
-    conn()
-    session()
-    
-
+    models.Base.metadata.create_all(db_ctx.db_engine)
 
 if __name__ == '__main__':
-    logging.basicConfig(filename="db.log", filemode='w')
-    logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
-
-    main()
+    print("I AM NOT A MODULE")
 
 """
 NOTE: for using a python logger instead of echo=True
     import logging
     logging.basicConfig()
-    logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+    logging.getLogger("sqlalchemy.db_engine").setLevel(logging.INFO)
 """
