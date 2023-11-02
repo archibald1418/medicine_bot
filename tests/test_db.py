@@ -75,6 +75,7 @@ def session():
 
 
 def test_migrate() -> None:
+    # TODO: alembic
 
     models.Base.metadata.create_all(db_ctx.db_engine)
 
