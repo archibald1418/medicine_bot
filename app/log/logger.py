@@ -7,10 +7,10 @@ import time
 class Logger(ILogger):
     def __init__(
         self,
-        filename: str = "timerbot.log",
+        filename: str = "app/log/bot.log",
         encoding: str = "utf8",
         filemode: FileMode = "w",
-        level: Optional[LogLevel] = logging.DEBUG,
+        level: Optional[LogLevel] = logging.INFO,
     ):
         logging.basicConfig(
             filename=filename, filemode=filemode, level=level, encoding=encoding
