@@ -1,6 +1,7 @@
 **/*.pyc
 **/*.log
 **/*.*.swp
-**/.env
+**/.env*
+!**/.env.sample
 **/__pycache__
 .vscode/settings.json
