@@ -1,12 +1,33 @@
-from app.db.DatabaseManager import DatabaseManager
-from app import db_engine
 import logging
+import os
 
 import pytest
+from dotenv import load_dotenv
+from sqlalchemy import Engine, create_engine, URL, make_url
+from sqlalchemy import StaticPool  # re-use same connection for all requests
+from sqlalchemy.orm import sessionmaker, Session
+
+load_dotenv(".env.test")
+
+DB: str = os.environ['DB']
+DBAPI: str = os.environ['DBAPI']
+DBFILE: str = os.environ['DBFILE']
+
+DBURL: URL = make_url(f"{DB}+{DBAPI}:///{DBFILE}")
+
+engine: Engine = create_engine(
+    DBURL,
+    connect_args={
+        "check_same_thread": False
+    },
+    poolclass=StaticPool,echo=True
+)
 
 
-db_ctx: DatabaseManager = DatabaseManager(db_engine)
+TestingSessionFactory: sessionmaker = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine
+)
 
 logging.basicConfig()
-logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
+logging.getLogger("sqlalchemy.engine.Engine").setLevel(logging.INFO)
 # with pytest doesn't allow writing to file with -s and -p no:logging

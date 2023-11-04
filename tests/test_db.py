@@ -1,23 +1,20 @@
-from sqlalchemy import Engine, Connection, Result, TextClause, MetaData
+from sqlalchemy import Connection, Result, TextClause, MetaData
 from sqlalchemy import (
-    create_engine,
     text
 )
+# import app.models as models
+
 from sqlalchemy.orm import Session
 
-import app.models as models
-from . import db_ctx
 
-import logging
+import pytest
 
 
+def test_db(db):
 
-def test_conn():
-
-    conn: Connection
-
+    print("ASJALSJKDHSALDJHSALDJHSALDJS")
     # 'with db_engine.begin()' will automatically commit everything in the block
-    with db_ctx as conn:
+    with db as conn:
         result: Result = conn.execute(text("SELECT 'hello from the other side'"))
         conn.execute(text("CREATE TABLE some_table (x int, y int)"))
         conn.execute(
@@ -29,19 +26,19 @@ def test_conn():
         # raise NotImplemented
 
     # rows
-    with db_ctx as conn:
+    with db as conn:
         result: Result = conn.execute(text("SELECT x, y FROM some_table"))
         for row in result:
             print(f"x: {row.x}  y: {row.y}")
     
     # parameters
-    with db_ctx as conn:
+    with db as conn:
         result = conn.execute(text("SELECT x, y FROM some_table WHERE y > :y"), {"y": 2})
         for row in result:
             print(f"x: {row.x}  y: {row.y}")
     
     # multiple params (this is a certified swine)
-    with db_ctx as conn:
+    with db as conn:
         conn.execute(
             text("INSERT INTO some_table (x, y) VALUES (:x, :y)"),
             [{"x": 11, "y": 12}, {"x": 13, "y": 14}],
@@ -49,35 +46,35 @@ def test_conn():
         conn.commit()
 
     
-    with db_ctx as conn:
+    with db as conn:
         result = conn.execute(text("SELECT * FROM some_table"))
         print("fetched:", *result.all(), sep='\n')
 
 
-def session():
-    session: Session = Session(db_ctx.db_engine)
+# def test_db_session():
+#     session: Session = Session(db_ctx.db_engine)
 
-    stmt: TextClause = text("SELECT * FROM some_table WHERE y > :y ORDER BY x, y")
+#     stmt: TextClause = text("SELECT * FROM some_table WHERE y > :y ORDER BY x, y")
     
-    with session:
-        result: Result = session.execute(stmt, {"y": 6})
-        for row in result.mappings():
-            for k, v in row.items():
-                print(k, v, sep=':')
+#     with session:
+#         result: Result = session.execute(stmt, {"y": 6})
+#         for row in result.mappings():
+#             for k, v in row.items():
+#                 print(k, v, sep=':')
     
-    with Session(db_ctx.db_engine) as session:
-        result = session.execute(
-            text("UPDATE some_table SET y=:y WHERE x=:x"),
-            [{"x": 9, "y": 11}, {"x": 13, "y": 15}],
-        )
-        session.commit()
-        # session.add
+#     with Session(db_ctx.db_engine) as session:
+#         result = session.execute(
+#             text("UPDATE some_table SET y=:y WHERE x=:x"),
+#             [{"x": 9, "y": 11}, {"x": 13, "y": 15}],
+#         )
+#         session.commit()
+#         # session.add
 
 
-def test_migrate() -> None:
-    # TODO: alembic
+# def test_migrate() -> None:
+#     # TODO: alembic
 
-    models.Base.metadata.create_all(db_ctx.db_engine)
+#     models.Base.metadata.create_all(db_ctx.db_engine)
 
 if __name__ == '__main__':
     print("I AM NOT A MODULE")
