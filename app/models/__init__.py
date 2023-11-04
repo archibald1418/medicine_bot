@@ -22,7 +22,7 @@ class Medicine(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50))
 
-    recipes: Mapped[List["Recipe"]] = relationship(back_populates="medicine")
+    recipes: Mapped[List["Recipe"]] = relationship(back_populates="medicine", cascade='all, delete')
     users: Mapped[List["User"]] = relationship(back_populates="medicines")
 
     def __repr__(self) -> str:
@@ -57,9 +57,10 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         primary_key=True, default=uuid.uuid4, unique=True, autoincrement=False
     )
-    fk_recipe_id: Mapped[int] = ForeignKey("recipe.id", nullable=True)
+    fk_recipe_id: Mapped[int] = ForeignKey("recipe.id", nullable=True, ondelete="CASCADE")
 
     medicines: Mapped[List[Medicine]] = relationship(
-        back_populates="users"
+        back_populates="users",
+        cascade="all, delete"
     )  # one user takes many medicines
-    recipes: Mapped[Recipe] = relationship(back_populates="user")
+    recipes: Mapped[Recipe] = relationship(back_populates="user", cascade="all, delete")
