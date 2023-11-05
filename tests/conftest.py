@@ -2,7 +2,7 @@ import pytest
 from typing import Generator
 from . import TestingSessionFactory, engine
 from sqlalchemy.orm import Session
-import app.models as models
+from app.models import Base, User, Recipe, Medicine
 
 
 @pytest.fixture(scope="function")  # this fixture wraps every test function
@@ -19,14 +19,16 @@ def db() -> Generator[Session, None, None]:
 def setup_teardown_db():
     def setup() -> None:
         with engine.connect() as conn:
-            models.Base.metadata.create_all(bind=conn)
+            Base.metadata.create_all(bind=conn)
             conn.commit()
 
     def teardown() -> None:
         with engine.connect() as conn:
-            models.Base.metadata.drop_all(bind=conn)
+            Base.metadata.drop_all(bind=conn)
             conn.commit()
 
     setup()
     yield
     teardown()
+
+

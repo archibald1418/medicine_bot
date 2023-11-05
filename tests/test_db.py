@@ -1,8 +1,19 @@
 from sqlalchemy import Connection, Result, TextClause, MetaData
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+import pytest
+
+from app.models import User, Medicine, Recipe
+from app.models.cruds import add_user, get_user_by_name, get_user_by_id
 
 
+def test_insert_db(db: Session):
+    user: User | None = add_user("John", db)
+    assert user
+    assert get_user_by_id(user.id) == get_user_by_name("John") == user
+
+
+@pytest.mark.skip(reason='this is a sandbox test')
 def test_db(db: Session):
     # 'with db_engine.begin()' will automatically commit everything in the block
     with db as conn:
