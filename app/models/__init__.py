@@ -25,7 +25,7 @@ class Medicine(Base):
     recipes: Mapped[List["Recipe"]] = relationship(back_populates="medicine")
     users: Mapped[List["User"]] = relationship(back_populates="medicines")
 
-    # FIXME: the cascades are shit
+    # FIXME: the relationships are bad (join condition undetermined)
     
 
     def __repr__(self) -> str:
