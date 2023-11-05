@@ -22,8 +22,11 @@ class Medicine(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50))
 
-    recipes: Mapped[List["Recipe"]] = relationship(back_populates="medicine", cascade='all, delete')
+    recipes: Mapped[List["Recipe"]] = relationship(back_populates="medicine")
     users: Mapped[List["User"]] = relationship(back_populates="medicines")
+
+    # FIXME: the cascades are shit
+    
 
     def __repr__(self) -> str:
         return f"Medicine(id={self.id!r}, name={self.name!r})"
@@ -33,7 +36,7 @@ class Recipe(Base):
     __tablename__ = "recipe"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    fk_medicine_id: Mapped[int] = ForeignKey("medicine.id", nullable=False)
+    fk_medicine_id: Mapped[int] = ForeignKey("medicine.id", nullable=False, ondelete="CASCADE")
     how_to_take: Mapped[TimeOfMedicine] = mapped_column(AlchemyEnum(TimeOfMedicine),
                                                         default=TimeOfMedicine.NOTSTATED)
     npills: Mapped[int] = mapped_column(default=0)
@@ -46,9 +49,13 @@ class Recipe(Base):
         back_populates="recipes"
     )  # one user follows many recipes
     medicine: Mapped[Medicine] = relationship(
-        back_populates="recipes"
+        back_populates="recipes",
+        cascade="all, delete"
     )  # one medicine appears in many recipes
     # recipes don't pile up as fast as medicines or users (for now)
+
+    def __repr__(self) -> str:
+        return f"Recipe(id={self.id}, medicine_id={self.fk_medicine_id})"
 
 
 class User(Base):
@@ -57,6 +64,7 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         primary_key=True, default=uuid.uuid4, unique=True, autoincrement=False
     )
+    name: Mapped[str] = mapped_column()
     fk_recipe_id: Mapped[int] = ForeignKey("recipe.id", nullable=True, ondelete="CASCADE")
 
     medicines: Mapped[List[Medicine]] = relationship(
