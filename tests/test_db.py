@@ -8,9 +8,12 @@ from app.models.cruds import add_user, get_user_by_name, get_user_by_id
 
 
 def test_insert_db(db: Session):
-    user: User | None = add_user("John", db)
-    assert user
-    assert get_user_by_id(user.id) == get_user_by_name("John") == user
+    with db:
+        user: User | None = add_user("John", db)
+        assert user
+        assert get_user_by_id(user.id, db) == get_user_by_name("John", db) == user
+    
+    # TODO: context manager orm service with encapsulated db session state, whose methods will share the open session
 
 
 @pytest.mark.skip(reason='this is a sandbox test')

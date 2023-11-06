@@ -1,8 +1,10 @@
-import uuid
+from __future__ import annotations
 
-from typing import List, Optional
+import uuid
 import datetime
-from sqlalchemy import ForeignKey, String, Enum as AlchemyEnum, DateTime
+from typing import List, TypeAlias
+
+from sqlalchemy import Column, ForeignKey, String, Enum as AlchemyEnum, DateTime, Table
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -10,6 +12,9 @@ from sqlalchemy.orm import (
     relationship,
 )
 from ..typedefs.enums import TimeOfMedicine
+
+
+UserId: TypeAlias = uuid.UUID
 
 
 class Base(DeclarativeBase):
@@ -22,8 +27,8 @@ class Medicine(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50))
 
-    recipes: Mapped[List["Recipe"]] = relationship(back_populates="medicine")
-    users: Mapped[List["User"]] = relationship(back_populates="medicines")
+    recipes: Mapped[List[Recipe]] = relationship(back_populates="medicine")
+    # users: Mapped[List["User"]] = relationship(back_populates="medicines")
 
     # FIXME: the relationships are bad (join condition undetermined)
     
@@ -36,23 +41,36 @@ class Recipe(Base):
     __tablename__ = "recipe"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    fk_medicine_id: Mapped[int] = ForeignKey("medicine.id", nullable=False, ondelete="CASCADE")
-    how_to_take: Mapped[TimeOfMedicine] = mapped_column(AlchemyEnum(TimeOfMedicine),
-                                                        default=TimeOfMedicine.NOTSTATED)
+    fk_medicine_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "medicine.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False
+    )
+    medicine: Mapped[Medicine] = relationship(back_populates="recipes")
+
+    fk_user_id: Mapped[UserId] = mapped_column(
+        ForeignKey(
+            "user.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False
+    )
+    user: Mapped[User] = relationship(back_populates="recipes")
+    # NOTE: mapped attrs are lazy-loaded (=memoized with active session instance!)
+
+
+    how_to_take: Mapped[TimeOfMedicine] = mapped_column(
+        AlchemyEnum(TimeOfMedicine),
+        default=TimeOfMedicine.NOTSTATED
+    )
     npills: Mapped[int] = mapped_column(default=0)
     ndays: Mapped[int] = mapped_column(default=0)
     sttm: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
     ettm: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
     # ... INPROGRESS: more parsing info for recipe
 
-    user: Mapped["User"] = relationship(
-        back_populates="recipes"
-    )  # one user follows many recipes
-    medicine: Mapped[Medicine] = relationship(
-        back_populates="recipes",
-        cascade="all, delete"
-    )  # one medicine appears in many recipes
-    # recipes don't pile up as fast as medicines or users (for now)
 
     def __repr__(self) -> str:
         return f"Recipe(id={self.id}, medicine_id={self.fk_medicine_id})"
@@ -61,14 +79,20 @@ class Recipe(Base):
 class User(Base):
     __tablename__ = "user"
 
-    id: Mapped[uuid.UUID] = mapped_column(
+    id: Mapped[UserId] = mapped_column(
         primary_key=True, default=uuid.uuid4, unique=True, autoincrement=False
     )
-    name: Mapped[str] = mapped_column()
-    fk_recipe_id: Mapped[int] = ForeignKey("recipe.id", nullable=True, ondelete="CASCADE")
+    name: Mapped[str] = mapped_column(String(100), nullable=True)
+    recipes: Mapped[List[Recipe]] = relationship(back_populates="user", cascade="all, delete")
+    # medicines: List[Mapped[Medicine]] = relationship(back_populates="users")
 
-    medicines: Mapped[List[Medicine]] = relationship(
-        back_populates="users",
-        cascade="all, delete"
-    )  # one user takes many medicines
-    recipes: Mapped[Recipe] = relationship(back_populates="user", cascade="all, delete")
+    def __repr__(self) -> str:
+        return f"User(id={self.id}, name={self.name or '...'})"
+
+# TODO:
+# user_takes_medicine = Table(
+#     "takes",
+#     Base.metadata,
+#     Column("fk_user_id", ForeignKey("user.id", primary_key=True)),
+#     Column("fk_medicine_id", ForeignKey("medicine.id", primary_key=True))
+# )
