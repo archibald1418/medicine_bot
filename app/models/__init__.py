@@ -30,9 +30,6 @@ class Medicine(Base):
     recipes: Mapped[List[Recipe]] = relationship(back_populates="medicine")
     # users: Mapped[List["User"]] = relationship(back_populates="medicines")
 
-    # FIXME: the relationships are bad (join condition undetermined)
-    
-
     def __repr__(self) -> str:
         return f"Medicine(id={self.id!r}, name={self.name!r})"
 
@@ -60,7 +57,6 @@ class Recipe(Base):
     user: Mapped[User] = relationship(back_populates="recipes")
     # NOTE: mapped attrs are lazy-loaded (=memoized with active session instance!)
 
-
     how_to_take: Mapped[TimeOfMedicine] = mapped_column(
         AlchemyEnum(TimeOfMedicine),
         default=TimeOfMedicine.NOTSTATED
@@ -70,7 +66,6 @@ class Recipe(Base):
     sttm: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
     ettm: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
     # ... INPROGRESS: more parsing info for recipe
-
 
     def __repr__(self) -> str:
         return f"Recipe(id={self.id}, medicine_id={self.fk_medicine_id})"
@@ -83,13 +78,15 @@ class User(Base):
         primary_key=True, default=uuid.uuid4, unique=True, autoincrement=False
     )
     name: Mapped[str] = mapped_column(String(100), nullable=True)
-    recipes: Mapped[List[Recipe]] = relationship(back_populates="user", cascade="all, delete")
+    recipes: Mapped[List[Recipe]] = relationship(
+        back_populates="user", cascade="all, delete")
     # medicines: List[Mapped[Medicine]] = relationship(back_populates="users")
 
     def __repr__(self) -> str:
         return f"User(id={self.id}, name={self.name or '...'})"
 
-# TODO:
+
+# TODO: many-to-many:
 # user_takes_medicine = Table(
 #     "takes",
 #     Base.metadata,

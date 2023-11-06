@@ -3,6 +3,13 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 
+# TODO: orm service context-manager class which encapsulates db session and cruds
+
+# TODO: test cascade deletions (use db brower for viewing)
+
+
+# TODO: create user_takes_medicine table and test cascades on user delete (should delete all assocs of that user)
+    # NOTE: do we have to delete all the medicines if it was the last user?
 
 def get_user_by_name(name: str, open_session: Session) -> Optional[User]:
     # with open_session:
