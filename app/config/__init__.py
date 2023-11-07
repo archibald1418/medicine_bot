@@ -1,7 +1,7 @@
 import os
 import re
 from typing import Pattern
-from sqlalchemy import URL
+from sqlalchemy.engine import URL, make_url
 
 from dotenv import load_dotenv
 
@@ -25,4 +25,4 @@ DB: str = os.environ["DB"]
 DBAPI: str = os.environ["DBAPI"]
 DBFILE: str = os.environ["DBFILE"]  # in-memory database
 
-DBURL: URL = f"{DB}+{DBAPI}:///{DBFILE}"
+DBURL: URL = make_url(f"{DB}+{DBAPI}:///{DBFILE}")

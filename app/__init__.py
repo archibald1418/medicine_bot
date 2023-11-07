@@ -4,10 +4,16 @@ from .log.logger import Logger
 from .config import DBURL
 import logging
 
-from sqlalchemy import Engine, create_engine
+from sqlalchemy.engine import Engine, create_engine
+from sqlalchemy.orm import sessionmaker
 
 # Globals
 bot = telebot.TeleBot(BOT_TOKEN, threaded=True)
 logger = Logger()
-db_engine: Engine = create_engine(DBURL)
+engine: Engine = create_engine(DBURL)
 
+SessionFactory: sessionmaker = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)

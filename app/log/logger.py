@@ -1,4 +1,5 @@
-from ..typedefs import FileMode, LogLevel, ILogger
+from ..typedefs import FileMode, LogLevel
+from ..typedefs.interfaces import ILogger
 from typing import Optional
 import logging
 import time

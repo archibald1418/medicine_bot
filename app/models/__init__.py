@@ -11,17 +11,18 @@ from sqlalchemy.orm import (
     mapped_column,
     relationship,
 )
+
 from ..typedefs.enums import TimeOfMedicine
 
 
 UserId: TypeAlias = uuid.UUID
 
 
-class Base(DeclarativeBase):
+class BaseModel(DeclarativeBase):
     ...
 
 
-class Medicine(Base):
+class Medicine(BaseModel):
     __tablename__ = "medicine"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -34,7 +35,7 @@ class Medicine(Base):
         return f"Medicine(id={self.id!r}, name={self.name!r})"
 
 
-class Recipe(Base):
+class Recipe(BaseModel):
     __tablename__ = "recipe"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -71,7 +72,7 @@ class Recipe(Base):
         return f"Recipe(id={self.id}, medicine_id={self.fk_medicine_id})"
 
 
-class User(Base):
+class User(BaseModel):
     __tablename__ = "user"
 
     id: Mapped[UserId] = mapped_column(
