@@ -5,3 +5,4 @@
 !**/.env.sample
 **/__pycache__
 .vscode/settings.json
+**/.mypy*
