@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 import pytest
 
 from app.models import User, Medicine, Recipe
-from app.models.cruds import add_user, get_user_by_name, get_user_by_id
+import app.models.cruds as cruds
+
 
 
 def test_insert_db(db: Session):
@@ -13,8 +14,16 @@ def test_insert_db(db: Session):
         assert user
         assert get_user_by_id(user.id, db) == get_user_by_name("John", db) == user
     
-    # TODO: context manager orm service with encapsulated db session state, whose methods will share the open session
 
+def test_fill_db(db: Session, faker_obj):
+    with db:
+        for i in range(10):
+            name = faker_obj.name()
+            medicine = faker_obj.safe_color_name()
+            
+            cruds.user.add_user(name)
+            cruds.medicine.add_medicine(medicine)
+        
 
 @pytest.mark.skip(reason='this is a sandbox test')
 def test_db(db: Session):
