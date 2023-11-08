@@ -27,6 +27,6 @@ def add_medicine(name: str, db: Session) -> Medicine:
     # print(id(user))
     # NOTE: all writes are queued into the session and executed later altogher (=unit of work)
     db.add(medicine)
-    # db.commit()
+    db.commit() # it has to commit because caller expects the side-effect
     return medicine
     

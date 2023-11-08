@@ -38,7 +38,12 @@ class Medicine(BaseModel):
 class Recipe(BaseModel):
     __tablename__ = "recipe"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        autoincrement=False
+    )
     fk_medicine_id: Mapped[int] = mapped_column(
         ForeignKey(
             "medicine.id",
@@ -80,7 +85,8 @@ class User(BaseModel):
     )
     name: Mapped[str] = mapped_column(String(100), nullable=True)
     recipes: Mapped[List[Recipe]] = relationship(
-        back_populates="user", cascade="all, delete")
+        back_populates="user", cascade="all, delete"
+    )
     # medicines: List[Mapped[Medicine]] = relationship(back_populates="users")
 
     def __repr__(self) -> str:

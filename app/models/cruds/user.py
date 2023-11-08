@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
-from utils.decorators import session_is_active
+from ...utils.decorators import session_is_active
 
 # TODO: orm service context-manager class which encapsulates db session and cruds
 
@@ -49,9 +49,8 @@ def add_user(name: str, db: Session) -> User:
     # with db:
     user: User = User(name=name)
     # print(id(user))
-    # NOTE: all writes are queued into the session and executed later altogher (=unit of work)
     db.add(user)
-    # db.commit()
+    db.commit()
     return user
 
 
