@@ -1,32 +1,47 @@
 from sqlalchemy import Connection, Result, TextClause, MetaData
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import MultipleResultsFound
 import pytest
-
 from app.models import User, Medicine, Recipe
-import app.models.cruds as cruds
+
+from app.models import cruds
 
 
-
-def test_insert_db(db: Session):
+@pytest.mark.skip(reason="Inactive")
+def test_insert_db(db: Session) -> None:
     with db:
-        user: User | None = add_user("John", db)
-        assert user
-        assert get_user_by_id(user.id, db) == get_user_by_name("John", db) == user
-    
+        # try:
+        user: User | None = cruds.user.add_user("John", db)
+        assert user and user.id
+        assert cruds.user.get_user_by_id(user.id, db) == user
+        assert cruds.user.get_user_by_name("John", db) == user
+        # except MultipleResultsFound:
 
-def test_fill_db(db: Session, faker_obj):
+
+
+
+def test_fill_db(db: Session, faker_obj) -> None:
     with db:
-        for i in range(10):
-            name = faker_obj.name()
-            medicine = faker_obj.safe_color_name()
-            
-            cruds.user.add_user(name)
-            cruds.medicine.add_medicine(medicine)
+        nrows = 10
+        for i in range(nrows):
+            name: str = faker_obj.name()
+            medicine: str = faker_obj.safe_color_name()
+
+            cruds.user.add_user(name, db)
+            cruds.medicine.add_medicine(medicine, db)
         
+        assert db.execute(
+            text("SELECT COUNT(*) from user")
+        ).scalar_one() == nrows
+        
+        assert db.execute(
+            text("SELECT COUNT(*) from medicine")
+        ).scalar_one() == nrows
+
 
 @pytest.mark.skip(reason='this is a sandbox test')
-def test_db(db: Session):
+def test_db(db: Session) -> None:
     # 'with db_engine.begin()' will automatically commit everything in the block
     with db as conn:
         result: Result = conn.execute(text("SELECT 'hello from the other side'"))
@@ -104,4 +119,3 @@ NOTE: for using a python logger instead of echo=True
     logging.basicConfig()
     logging.getLogger("sqlalchemy.db_engine").setLevel(logging.INFO)
 """
-

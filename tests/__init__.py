@@ -23,8 +23,6 @@ engine: Engine = create_engine(
     # echo=True
 )
 
-# TODO: orm service to share a session between cruds
-
 
 TestingSessionFactory: sessionmaker = sessionmaker(
     autocommit=False,
