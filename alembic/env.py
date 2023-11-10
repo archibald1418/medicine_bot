@@ -1,7 +1,7 @@
 from logging.config import fileConfig
 
 from sqlalchemy import Engine, engine_from_config, create_engine
-from sqlalchemy import pool
+from sqlalchemy import pool, MetaData
 
 from alembic import context
 from alembic.config import Config
@@ -21,9 +21,9 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+from app.models import BaseModel
+target_metadata: MetaData = BaseModel.metadata
+# target_metadata = None
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -37,7 +37,7 @@ password: str
 host: str
 port: int
 
-if not load_dotenv(".env"):
+if not load_dotenv(".env"):    
     raise Exception("No envs are set")
 
 DB: str = os.environ["DB"]
